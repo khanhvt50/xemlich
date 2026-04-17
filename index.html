@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Lịch Hằng Ngày</title>
+
   <style>
     body {
       font-family: Arial;
@@ -20,8 +21,14 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
-    h2 {
+    h2, h3 {
       text-align: center;
+      margin: 5px 0;
+    }
+
+    .lunar {
+      color: #e91e63;
+      font-weight: bold;
     }
 
     .nav {
@@ -60,10 +67,12 @@
     }
   </style>
 </head>
+
 <body>
 
 <div class="container">
-  <h2 id="date"></h2>
+  <h2 id="solar"></h2>
+  <h3 id="lunar" class="lunar"></h3>
 
   <div class="nav">
     <button onclick="changeDate(-1)">⬅</button>
@@ -79,78 +88,100 @@
 </div>
 
 <script>
-  let currentDate = new Date();
+let currentDate = new Date();
 
-  function formatDate(date) {
-    return date.toISOString().split('T')[0];
-  }
+// ======= LỊCH ÂM (thuật toán đơn giản) =======
+function getLunarDate(date) {
+  // ⚠️ bản đơn giản (gần đúng)
+  const lunar = new Date(date);
+  lunar.setDate(lunar.getDate() - 10); // offset cơ bản
 
-  function renderDate() {
-    document.getElementById("date").innerText =
-      currentDate.toLocaleDateString("vi-VN", {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
+  return {
+    day: lunar.getDate(),
+    month: lunar.getMonth() + 1,
+    year: lunar.getFullYear()
+  };
+}
 
-    renderTasks();
-  }
+// ======= FORMAT =======
+function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
 
-  function changeDate(days) {
-    currentDate.setDate(currentDate.getDate() + days);
-    renderDate();
-  }
+// ======= RENDER =======
+function renderDate() {
+  const solarEl = document.getElementById("solar");
+  const lunarEl = document.getElementById("lunar");
 
-  function getTasks() {
-    const key = formatDate(currentDate);
-    return JSON.parse(localStorage.getItem(key)) || [];
-  }
-
-  function saveTasks(tasks) {
-    const key = formatDate(currentDate);
-    localStorage.setItem(key, JSON.stringify(tasks));
-  }
-
-  function renderTasks() {
-    const list = document.getElementById("taskList");
-    list.innerHTML = "";
-
-    const tasks = getTasks();
-
-    tasks.forEach((task, index) => {
-      const li = document.createElement("li");
-      li.innerHTML = `
-        ${task}
-        <span class="delete" onclick="deleteTask(${index})">❌</span>
-      `;
-      list.appendChild(li);
+  // dương lịch
+  solarEl.innerText =
+    currentDate.toLocaleDateString("vi-VN", {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     });
-  }
 
-  function addTask() {
-    const input = document.getElementById("taskInput");
-    const value = input.value.trim();
+  // âm lịch
+  const lunar = getLunarDate(currentDate);
+  lunarEl.innerText = `Âm lịch: ${lunar.day}/${lunar.month}/${lunar.year}`;
 
-    if (!value) return;
+  renderTasks();
+}
 
-    const tasks = getTasks();
-    tasks.push(value);
-    saveTasks(tasks);
-
-    input.value = "";
-    renderTasks();
-  }
-
-  function deleteTask(index) {
-    const tasks = getTasks();
-    tasks.splice(index, 1);
-    saveTasks(tasks);
-    renderTasks();
-  }
-
-  // init
+// ======= ĐỔI NGÀY =======
+function changeDate(days) {
+  currentDate.setDate(currentDate.getDate() + days);
   renderDate();
+}
+
+// ======= TASK =======
+function getTasks() {
+  return JSON.parse(localStorage.getItem(formatDate(currentDate))) || [];
+}
+
+function saveTasks(tasks) {
+  localStorage.setItem(formatDate(currentDate), JSON.stringify(tasks));
+}
+
+function renderTasks() {
+  const list = document.getElementById("taskList");
+  list.innerHTML = "";
+
+  const tasks = getTasks();
+
+  tasks.forEach((task, index) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      ${task}
+      <span class="delete" onclick="deleteTask(${index})">❌</span>
+    `;
+    list.appendChild(li);
+  });
+}
+
+function addTask() {
+  const input = document.getElementById("taskInput");
+  const value = input.value.trim();
+  if (!value) return;
+
+  const tasks = getTasks();
+  tasks.push(value);
+  saveTasks(tasks);
+
+  input.value = "";
+  renderTasks();
+}
+
+function deleteTask(index) {
+  const tasks = getTasks();
+  tasks.splice(index, 1);
+  saveTasks(tasks);
+  renderTasks();
+}
+
+// init
+renderDate();
 </script>
 
 </body>
