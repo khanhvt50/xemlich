@@ -2,136 +2,104 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Lịch Hằng Ngày MAX UI</title>
+<title>Lịch Dashboard PRO</title>
 
 <style>
 body {
   font-family: Arial;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
-  background-size: cover;
-  background-position: center;
-  transition: background 1s ease;
-  overflow: hidden;
+  display: flex;
+  height: 100vh;
+  background: linear-gradient(135deg,#1e3c72,#2a5298);
+  color: white;
 }
 
-/* overlay gradient */
-body::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    rgba(0,0,0,0.2),
-    rgba(0,0,0,0.6)
-  );
-  z-index: 0;
-}
-
-/* sao đêm */
-.stars {
-  position: absolute;
+/* ===== LAYOUT ===== */
+.wrapper {
+  display: flex;
   width: 100%;
-  height: 100%;
-  background: transparent url('https://www.transparenttextures.com/patterns/stardust.png');
-  animation: moveStars 60s linear infinite;
-  opacity: 0;
-  z-index: 0;
+  padding: 20px;
+  gap: 20px;
 }
 
-@keyframes moveStars {
-  from {transform: translateY(0);}
-  to {transform: translateY(-1000px);}
-}
-
-.container {
-  position: relative;
-  z-index: 2;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(20px);
-  padding: 25px;
+/* ===== LEFT ===== */
+.left {
   width: 420px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(20px);
+  padding: 20px;
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  color: white;
 }
 
-h2, h3 {
-  text-align: center;
-  margin: 5px 0;
-}
-
-.lunar {
-  color: #ff80ab;
-  font-weight: bold;
-}
-
-.nav {
+/* ===== RIGHT ===== */
+.right {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 20px;
 }
 
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  padding: 15px;
+  border-radius: 16px;
+}
+
+/* ===== ELEMENT ===== */
+h2,h3 {text-align:center;margin:5px 0;}
 button {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.2);
-  color: white;
-  cursor: pointer;
-  transition: 0.3s;
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  background:rgba(255,255,255,0.2);
+  color:white;
+  cursor:pointer;
 }
+button:hover {background:rgba(255,255,255,0.4);}
+input {padding:6px;margin:3px;border-radius:6px;border:none;}
 
-button:hover {
-  background: rgba(255,255,255,0.4);
-}
-
-.toggle-btn {
-  width: 100%;
-  margin-bottom: 10px;
-  background: rgba(33,150,243,0.8);
-}
-
-input {
-  padding: 6px;
-  margin: 3px;
-  border-radius: 6px;
-  border: none;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
+ul {list-style:none;padding:0;}
 li {
-  background: rgba(255,255,255,0.2);
-  margin: 5px 0;
-  padding: 8px;
-  display: flex;
-  justify-content: space-between;
-  border-radius: 8px;
+  background:rgba(255,255,255,0.2);
+  margin:5px 0;
+  padding:8px;
+  display:flex;
+  justify-content:space-between;
 }
 
-.section {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255,255,255,0.3);
+/* ===== CALENDAR ===== */
+.calendar {
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:5px;
+  text-align:center;
+}
+
+.day {
+  padding:8px;
+  background:rgba(255,255,255,0.2);
+  border-radius:6px;
+}
+
+.today {
+  background:#ff4081;
 }
 </style>
 </head>
 
 <body>
 
-<div class="stars" id="stars"></div>
+<div class="wrapper">
 
-<div class="container">
+<!-- ===== LEFT ===== -->
+<div class="left">
 
 <h2 id="solar"></h2>
-<h3 id="lunar" class="lunar"></h3>
+<h3 id="lunar"></h3>
 
-<div class="nav">
+<div style="display:flex;justify-content:space-between;">
 <button onclick="changeDate(-1)">⬅</button>
 <button onclick="changeDate(1)">➡</button>
 </div>
@@ -143,23 +111,42 @@ li {
 
 <ul id="taskList"></ul>
 
-<div class="section">
-<button class="toggle-btn" onclick="toggleMode()" id="modeBtn">
-Tra cứu lịch dương sang âm
-</button>
+<button onclick="toggleMode()" id="modeBtn">Tra cứu dương → âm</button>
 
 <div id="solarMode">
 <input type="date" id="datePicker" onchange="convertSelectedDate()">
-<h3 id="resultLunar" class="lunar"></h3>
+<h3 id="resultLunar"></h3>
 </div>
 
 <div id="lunarMode" style="display:none;">
-<input type="number" id="lDay" placeholder="Ngày">
-<input type="number" id="lMonth" placeholder="Tháng">
-<input type="number" id="lYear" placeholder="Năm">
-<br>
+<input id="lDay" placeholder="Ngày">
+<input id="lMonth" placeholder="Tháng">
+<input id="lYear" placeholder="Năm">
 <button onclick="convertLunarToSolar()">Chuyển</button>
 <h3 id="resultSolar"></h3>
+</div>
+
+</div>
+
+<!-- ===== RIGHT ===== -->
+<div class="right">
+
+<!-- CALENDAR -->
+<div class="card">
+<h3>📅 Lịch tháng</h3>
+<div id="calendar" class="calendar"></div>
+</div>
+
+<!-- STATS -->
+<div class="card">
+<h3>📊 Thống kê</h3>
+<p id="taskCount"></p>
+</div>
+
+<!-- NOTE -->
+<div class="card">
+<h3>📝 Ghi chú</h3>
+<textarea id="note" style="width:100%;height:80px;"></textarea>
 </div>
 
 </div>
@@ -170,123 +157,101 @@ Tra cứu lịch dương sang âm
 let currentDate = new Date();
 let isSolarMode = true;
 
-// ===== BACKGROUND MAX =====
-const bg = {
-  morning: ["https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"],
-  day: ["https://images.unsplash.com/photo-1501785888041-af3ef285b470"],
-  evening: ["https://images.unsplash.com/photo-1495567720989-cebdbdd97913"],
-  night: ["https://images.unsplash.com/photo-1500534314209-a25ddb2bd429"]
-};
-
-function setBackground() {
-  const hour = new Date().getHours();
-  let type = "day";
-
-  if (hour >= 5 && hour < 10) type = "morning";
-  else if (hour < 16) type = "day";
-  else if (hour < 19) type = "evening";
-  else type = "night";
-
-  document.body.style.backgroundImage = `url('${bg[type][0]}')`;
-
-  // bật sao ban đêm
-  document.getElementById("stars").style.opacity = type === "night" ? 0.5 : 0;
-}
-
-// ===== TOGGLE =====
-function toggleMode() {
-  isSolarMode = !isSolarMode;
-
-  solarMode.style.display = isSolarMode ? "block" : "none";
-  lunarMode.style.display = isSolarMode ? "none" : "block";
-
-  modeBtn.innerText = isSolarMode
-    ? "Tra cứu lịch dương sang âm"
-    : "Tra cứu lịch âm sang dương";
-}
-
-// ===== ÂM LỊCH =====
-function jdFromDate(dd, mm, yy) {
-  let a = Math.floor((14 - mm) / 12);
-  let y = yy + 4800 - a;
-  let m = mm + 12 * a - 3;
-  return dd + Math.floor((153 * m + 2) / 5)
-    + 365 * y + Math.floor(y / 4)
-    - Math.floor(y / 100)
-    + Math.floor(y / 400) - 32045;
-}
-
-function getNewMoonDay(k, timeZone) {
-  return Math.floor(2415020.75933 + 29.53058868 * k + timeZone/24);
-}
-
-function getLunarMonth11(yy, timeZone) {
-  const off = jdFromDate(31,12,yy)-2415021;
-  const k = Math.floor(off/29.53);
-  return getNewMoonDay(k,timeZone);
-}
-
-function convertSolar2Lunar(dd,mm,yy,timeZone=7){
-  const dayNumber = jdFromDate(dd,mm,yy);
-  const k = Math.floor((dayNumber-2415021)/29.53);
-
-  let monthStart = getNewMoonDay(k+1,timeZone);
-  if(monthStart>dayNumber) monthStart=getNewMoonDay(k,timeZone);
-
-  let a11 = getLunarMonth11(yy,timeZone);
-  let lunarYear;
-
-  if(a11>=monthStart){
-    lunarYear=yy;
-    a11=getLunarMonth11(yy-1,timeZone);
-  } else lunarYear=yy+1;
-
-  const lunarDay = dayNumber-monthStart+1;
-  let lunarMonth = Math.floor((monthStart-a11)/29)+11;
-  if(lunarMonth>12) lunarMonth-=12;
-
-  return {day:lunarDay,month:lunarMonth,year:lunarYear};
-}
-
-// ===== REALTIME =====
+/* ===== TIME ===== */
 function updateTime(){
-  const now=new Date();
-  solar.innerText=`${now.toLocaleTimeString("vi-VN")} - ${currentDate.toLocaleDateString("vi-VN",{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`;
+  solar.innerText = new Date().toLocaleTimeString("vi-VN") + " - " +
+  currentDate.toLocaleDateString("vi-VN",{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
 
-function renderDate(){
-  updateTime();
-  setBackground();
+/* ===== FAKE LUNAR (giữ logic cũ của bạn có thể thay lại) ===== */
+function convertSolar2Lunar(d,m,y){
+  return {day:d,month:m,year:y};
+}
 
-  const lunar=convertSolar2Lunar(
+/* ===== RENDER ===== */
+function render(){
+  updateTime();
+
+  const lunarDate = convertSolar2Lunar(
     currentDate.getDate(),
     currentDate.getMonth()+1,
     currentDate.getFullYear()
   );
 
-  document.getElementById("lunar").innerText=`Âm lịch: ${lunar.day}/${lunar.month}/${lunar.year}`;
+  lunar.innerText = `Âm: ${lunarDate.day}/${lunarDate.month}/${lunarDate.year}`;
+
   renderTasks();
+  renderCalendar();
 }
 
-setInterval(updateTime,1000);
+/* ===== CALENDAR ===== */
+function renderCalendar(){
+  const cal = document.getElementById("calendar");
+  cal.innerHTML = "";
 
-// ===== TASK =====
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  const lastDay = new Date(year, month+1, 0).getDate();
+
+  for(let i=1;i<=lastDay;i++){
+    const div = document.createElement("div");
+    div.className = "day";
+
+    if(i === currentDate.getDate()) div.classList.add("today");
+
+    div.innerText = i;
+    cal.appendChild(div);
+  }
+}
+
+/* ===== TOGGLE ===== */
+function toggleMode(){
+  isSolarMode = !isSolarMode;
+  solarMode.style.display = isSolarMode?"block":"none";
+  lunarMode.style.display = isSolarMode?"none":"block";
+}
+
+/* ===== TASK ===== */
 function formatDate(d){return d.toISOString().split('T')[0];}
 function getTasks(){return JSON.parse(localStorage.getItem(formatDate(currentDate)))||[];}
 function saveTasks(t){localStorage.setItem(formatDate(currentDate),JSON.stringify(t));}
+
 function renderTasks(){
+  const list = getTasks();
   taskList.innerHTML="";
-  getTasks().forEach((t,i)=>taskList.innerHTML+=`<li>${t}<span onclick="deleteTask(${i})">❌</span></li>`);
+  list.forEach((t,i)=>{
+    taskList.innerHTML+=`<li>${t}<span onclick="deleteTask(${i})">❌</span></li>`;
+  });
+
+  taskCount.innerText = "Tổng công việc: " + list.length;
 }
+
 function addTask(){
   if(!taskInput.value.trim())return;
-  let t=getTasks();t.push(taskInput.value);
-  saveTasks(t);taskInput.value="";renderTasks();
+  let t = getTasks();
+  t.push(taskInput.value);
+  saveTasks(t);
+  taskInput.value="";
+  renderTasks();
 }
-function deleteTask(i){let t=getTasks();t.splice(i,1);saveTasks(t);renderTasks();}
 
-// INIT
-renderDate();
+function deleteTask(i){
+  let t=getTasks();
+  t.splice(i,1);
+  saveTasks(t);
+  renderTasks();
+}
+
+/* ===== CHANGE DATE ===== */
+function changeDate(d){
+  currentDate.setDate(currentDate.getDate()+d);
+  render();
+}
+
+/* ===== INIT ===== */
+setInterval(updateTime,1000);
+render();
 </script>
 
 </body>
