@@ -7,18 +7,23 @@
   <style>
     body {
       font-family: Arial;
-      background: #f4f6f8;
       display: flex;
       justify-content: center;
-      margin-top: 50px;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-size: cover;
+      background-position: center;
+      transition: background 0.5s ease;
     }
 
     .container {
-      background: white;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
       padding: 20px;
       width: 400px;
       border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
 
     h2, h3 {
@@ -90,12 +95,32 @@
 <script>
 let currentDate = new Date();
 
-// ======= LỊCH ÂM (thuật toán đơn giản) =======
-function getLunarDate(date) {
-  // ⚠️ bản đơn giản (gần đúng)
-  const lunar = new Date(date);
-  lunar.setDate(lunar.getDate() - 10); // offset cơ bản
+// ===== 🌄 BACKGROUND THEO NGÀY =====
+const backgrounds = [
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+  "https://images.unsplash.com/photo-1490750967868-88aa4486c946",
+  "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+];
 
+// lấy ngày trong năm
+function getDayOfYear() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  return Math.floor((now - start) / (1000 * 60 * 60 * 24));
+}
+
+// set background
+function setBackground() {
+  const index = getDayOfYear() % backgrounds.length;
+  document.body.style.backgroundImage = `url('${backgrounds[index]}')`;
+}
+
+// ======= LỊCH ÂM =======
+function getLunarDate(date) {
+  const lunar = new Date(date);
+  lunar.setDate(lunar.getDate() - 10);
   return {
     day: lunar.getDate(),
     month: lunar.getMonth() + 1,
@@ -113,7 +138,6 @@ function renderDate() {
   const solarEl = document.getElementById("solar");
   const lunarEl = document.getElementById("lunar");
 
-  // dương lịch
   solarEl.innerText =
     currentDate.toLocaleDateString("vi-VN", {
       weekday: 'long',
@@ -122,7 +146,6 @@ function renderDate() {
       day: 'numeric'
     });
 
-  // âm lịch
   const lunar = getLunarDate(currentDate);
   lunarEl.innerText = `Âm lịch: ${lunar.day}/${lunar.month}/${lunar.year}`;
 
@@ -180,7 +203,8 @@ function deleteTask(index) {
   renderTasks();
 }
 
-// init
+// ===== INIT =====
+setBackground();
 renderDate();
 </script>
 
