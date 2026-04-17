@@ -1,81 +1,87 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Lịch Hằng Ngày</title>
+<meta charset="UTF-8">
+<title>Lịch Hằng Ngày</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-size: cover;
-      background-position: center;
-      transition: background 0.5s ease;
-    }
+<style>
+body {
+  font-family: Arial;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-size: cover;
+  background-position: center;
+  transition: background 0.5s ease;
+}
 
-    .container {
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(10px);
-      padding: 20px;
-      width: 400px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
+.container {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  width: 420px;
+  border-radius: 10px;
+}
 
-    h2, h3 {
-      text-align: center;
-      margin: 5px 0;
-    }
+h2, h3 {
+  text-align: center;
+  margin: 5px 0;
+}
 
-    .lunar {
-      color: #e91e63;
-      font-weight: bold;
-    }
+.lunar {
+  color: #e91e63;
+  font-weight: bold;
+}
 
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 15px;
-    }
+.section {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+}
 
-    button {
-      padding: 5px 10px;
-      cursor: pointer;
-    }
+.nav {
+  display: flex;
+  justify-content: space-between;
+}
 
-    input {
-      width: 75%;
-      padding: 5px;
-    }
+.toggle-btn {
+  width: 100%;
+  margin-bottom: 10px;
+  background: #2196f3;
+  color: white;
+}
 
-    ul {
-      list-style: none;
-      padding: 0;
-    }
+input {
+  padding: 5px;
+  margin: 3px;
+}
 
-    li {
-      background: #e3f2fd;
-      margin: 5px 0;
-      padding: 8px;
-      display: flex;
-      justify-content: space-between;
-      border-radius: 5px;
-    }
+ul {
+  list-style: none;
+  padding: 0;
+}
 
-    .delete {
-      color: red;
-      cursor: pointer;
-    }
-  </style>
+li {
+  background: #e3f2fd;
+  margin: 5px 0;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.delete {
+  color: red;
+  cursor: pointer;
+}
+</style>
 </head>
 
 <body>
 
 <div class="container">
+
   <h2 id="solar"></h2>
   <h3 id="lunar" class="lunar"></h3>
 
@@ -90,12 +96,36 @@
   </div>
 
   <ul id="taskList"></ul>
+
+  <div class="section">
+
+    <button class="toggle-btn" onclick="toggleMode()" id="modeBtn">
+      Tra cứu lịch dương sang âm
+    </button>
+
+    <div id="solarMode">
+      <input type="date" id="datePicker" onchange="convertSelectedDate()">
+      <h3 id="resultLunar" class="lunar"></h3>
+    </div>
+
+    <div id="lunarMode" style="display:none;">
+      <input type="number" id="lDay" placeholder="Ngày">
+      <input type="number" id="lMonth" placeholder="Tháng">
+      <input type="number" id="lYear" placeholder="Năm">
+      <br>
+      <button onclick="convertLunarToSolar()">Chuyển</button>
+      <h3 id="resultSolar"></h3>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
 let currentDate = new Date();
+let isSolarMode = true;
 
-// ===== 🌄 BACKGROUND THEO NGÀY =====
+// ===== BACKGROUND THEO NGÀY =====
 const backgrounds = [
   "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
   "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
@@ -104,61 +134,171 @@ const backgrounds = [
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
 ];
 
-// lấy ngày trong năm
-function getDayOfYear() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  return Math.floor((now - start) / (1000 * 60 * 60 * 24));
+function getDayOfYear(date) {
+  const start = new Date(date.getFullYear(), 0, 0);
+  return Math.floor((date - start) / (1000 * 60 * 60 * 24));
 }
 
-// set background
 function setBackground() {
-  const index = getDayOfYear() % backgrounds.length;
+  const index = getDayOfYear(currentDate) % backgrounds.length;
   document.body.style.backgroundImage = `url('${backgrounds[index]}')`;
 }
 
-// ======= LỊCH ÂM =======
-function getLunarDate(date) {
-  const lunar = new Date(date);
-  lunar.setDate(lunar.getDate() - 10);
-  return {
-    day: lunar.getDate(),
-    month: lunar.getMonth() + 1,
-    year: lunar.getFullYear()
-  };
+// ===== TOGGLE =====
+function toggleMode() {
+  isSolarMode = !isSolarMode;
+
+  document.getElementById("solarMode").style.display = isSolarMode ? "block" : "none";
+  document.getElementById("lunarMode").style.display = isSolarMode ? "none" : "block";
+
+  document.getElementById("modeBtn").innerText =
+    isSolarMode
+      ? "Tra cứu lịch dương sang âm"
+      : "Tra cứu lịch âm sang dương";
 }
 
-// ======= FORMAT =======
-function formatDate(date) {
-  return date.toISOString().split('T')[0];
+// ===== ÂM LỊCH =====
+function jdFromDate(dd, mm, yy) {
+  let a = Math.floor((14 - mm) / 12);
+  let y = yy + 4800 - a;
+  let m = mm + 12 * a - 3;
+
+  return dd + Math.floor((153 * m + 2) / 5)
+    + 365 * y + Math.floor(y / 4)
+    - Math.floor(y / 100)
+    + Math.floor(y / 400) - 32045;
 }
 
-// ======= RENDER =======
+function getNewMoonDay(k, timeZone) {
+  const T = k / 1236.85;
+  let jd = 2415020.75933 + 29.53058868 * k;
+  jd += 0.00033 * Math.sin((166.56 + 132.87 * T) * Math.PI / 180);
+  return Math.floor(jd + 0.5 + timeZone / 24);
+}
+
+function getLunarMonth11(yy, timeZone) {
+  const off = jdFromDate(31, 12, yy) - 2415021;
+  const k = Math.floor(off / 29.530588853);
+  return getNewMoonDay(k, timeZone);
+}
+
+function convertSolar2Lunar(dd, mm, yy, timeZone = 7) {
+  const dayNumber = jdFromDate(dd, mm, yy);
+  const k = Math.floor((dayNumber - 2415021) / 29.530588853);
+
+  let monthStart = getNewMoonDay(k + 1, timeZone);
+  if (monthStart > dayNumber) {
+    monthStart = getNewMoonDay(k, timeZone);
+  }
+
+  let a11 = getLunarMonth11(yy, timeZone);
+  let lunarYear;
+
+  if (a11 >= monthStart) {
+    lunarYear = yy;
+    a11 = getLunarMonth11(yy - 1, timeZone);
+  } else {
+    lunarYear = yy + 1;
+  }
+
+  const lunarDay = dayNumber - monthStart + 1;
+  const diff = Math.floor((monthStart - a11) / 29);
+  let lunarMonth = diff + 11;
+
+  if (lunarMonth > 12) lunarMonth -= 12;
+
+  return { day: lunarDay, month: lunarMonth, year: lunarYear };
+}
+
+// ===== ÂM → DƯƠNG =====
+function convertLunarToSolar() {
+  const ld = +lDay.value;
+  const lm = +lMonth.value;
+  const ly = +lYear.value;
+
+  let start = new Date(ly - 1, 0, 1);
+  let end = new Date(ly + 1, 11, 31);
+
+  while (start <= end) {
+    let d = start.getDate();
+    let m = start.getMonth() + 1;
+    let y = start.getFullYear();
+
+    let lunar = convertSolar2Lunar(d, m, y);
+
+    if (lunar.day === ld && lunar.month === lm && lunar.year === ly) {
+      resultSolar.innerText = `→ ${d}/${m}/${y}`;
+      return;
+    }
+
+    start.setDate(start.getDate() + 1);
+  }
+
+  resultSolar.innerText = "Không tìm thấy";
+}
+
+// ===== DƯƠNG → ÂM =====
+function convertSelectedDate() {
+  const value = datePicker.value;
+  if (!value) return;
+
+  const d = new Date(value);
+
+  const lunar = convertSolar2Lunar(
+    d.getDate(),
+    d.getMonth() + 1,
+    d.getFullYear()
+  );
+
+  resultLunar.innerText =
+    `→ ${lunar.day}/${lunar.month}/${lunar.year}`;
+}
+
+// ===== HIỂN THỊ + GIỜ =====
+function updateTime() {
+  const now = new Date();
+
+  const time = now.toLocaleTimeString("vi-VN");
+
+  const date = currentDate.toLocaleDateString("vi-VN", {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  solar.innerText = `${time} - ${date}`;
+}
+
 function renderDate() {
-  const solarEl = document.getElementById("solar");
-  const lunarEl = document.getElementById("lunar");
+  updateTime();
+  setBackground(); // 🔥 cập nhật background theo ngày
 
-  solarEl.innerText =
-    currentDate.toLocaleDateString("vi-VN", {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const lunar = convertSolar2Lunar(
+    currentDate.getDate(),
+    currentDate.getMonth() + 1,
+    currentDate.getFullYear()
+  );
 
-  const lunar = getLunarDate(currentDate);
-  lunarEl.innerText = `Âm lịch: ${lunar.day}/${lunar.month}/${lunar.year}`;
+  document.getElementById("lunar").innerText =
+    `Âm lịch: ${lunar.day}/${lunar.month}/${lunar.year}`;
 
   renderTasks();
 }
 
-// ======= ĐỔI NGÀY =======
+setInterval(updateTime, 1000);
+
+// ===== ĐỔI NGÀY =====
 function changeDate(days) {
   currentDate.setDate(currentDate.getDate() + days);
   renderDate();
 }
 
-// ======= TASK =======
+// ===== TASK =====
+function formatDate(date) {
+  return date.toISOString().split('T')[0];
+}
+
 function getTasks() {
   return JSON.parse(localStorage.getItem(formatDate(currentDate))) || [];
 }
@@ -168,43 +308,29 @@ function saveTasks(tasks) {
 }
 
 function renderTasks() {
-  const list = document.getElementById("taskList");
-  list.innerHTML = "";
-
-  const tasks = getTasks();
-
-  tasks.forEach((task, index) => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      ${task}
-      <span class="delete" onclick="deleteTask(${index})">❌</span>
-    `;
-    list.appendChild(li);
+  taskList.innerHTML = "";
+  getTasks().forEach((task, i) => {
+    taskList.innerHTML += `<li>${task} <span onclick="deleteTask(${i})">❌</span></li>`;
   });
 }
 
 function addTask() {
-  const input = document.getElementById("taskInput");
-  const value = input.value.trim();
-  if (!value) return;
-
-  const tasks = getTasks();
-  tasks.push(value);
+  if (!taskInput.value.trim()) return;
+  let tasks = getTasks();
+  tasks.push(taskInput.value);
   saveTasks(tasks);
-
-  input.value = "";
+  taskInput.value = "";
   renderTasks();
 }
 
-function deleteTask(index) {
-  const tasks = getTasks();
-  tasks.splice(index, 1);
+function deleteTask(i) {
+  let tasks = getTasks();
+  tasks.splice(i, 1);
   saveTasks(tasks);
   renderTasks();
 }
 
-// ===== INIT =====
-setBackground();
+// INIT
 renderDate();
 </script>
 
