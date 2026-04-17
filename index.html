@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Lịch Hằng Ngày</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      margin-top: 50px;
+    }
+
+    .container {
+      background: white;
+      padding: 20px;
+      width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    input {
+      width: 75%;
+      padding: 5px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: #e3f2fd;
+      margin: 5px 0;
+      padding: 8px;
+      display: flex;
+      justify-content: space-between;
+      border-radius: 5px;
+    }
+
+    .delete {
+      color: red;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2 id="date"></h2>
+
+  <div class="nav">
+    <button onclick="changeDate(-1)">⬅</button>
+    <button onclick="changeDate(1)">➡</button>
+  </div>
+
+  <div>
+    <input type="text" id="taskInput" placeholder="Nhập công việc...">
+    <button onclick="addTask()">Thêm</button>
+  </div>
+
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+  let currentDate = new Date();
+
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  function renderDate() {
+    document.getElementById("date").innerText =
+      currentDate.toLocaleDateString("vi-VN", {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+    renderTasks();
+  }
+
+  function changeDate(days) {
+    currentDate.setDate(currentDate.getDate() + days);
+    renderDate();
+  }
+
+  function getTasks() {
+    const key = formatDate(currentDate);
+    return JSON.parse(localStorage.getItem(key)) || [];
+  }
+
+  function saveTasks(tasks) {
+    const key = formatDate(currentDate);
+    localStorage.setItem(key, JSON.stringify(tasks));
+  }
+
+  function renderTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    const tasks = getTasks();
+
+    tasks.forEach((task, index) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        ${task}
+        <span class="delete" onclick="deleteTask(${index})">❌</span>
+      `;
+      list.appendChild(li);
+    });
+  }
+
+  function addTask() {
+    const input = document.getElementById("taskInput");
+    const value = input.value.trim();
+
+    if (!value) return;
+
+    const tasks = getTasks();
+    tasks.push(value);
+    saveTasks(tasks);
+
+    input.value = "";
+    renderTasks();
+  }
+
+  function deleteTask(index) {
+    const tasks = getTasks();
+    tasks.splice(index, 1);
+    saveTasks(tasks);
+    renderTasks();
+  }
+
+  // init
+  renderDate();
+</script>
+
+</body>
+</html>
