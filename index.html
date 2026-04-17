@@ -14,15 +14,30 @@ body {
   margin: 0;
   background-size: cover;
   background-position: center;
-  transition: background 0.5s ease;
+  transition: background 0.8s ease;
+  position: relative;
+}
+
+/* overlay đẹp */
+body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(0,0,0,0.2),
+    rgba(0,0,0,0.4)
+  );
+  z-index: 0;
 }
 
 .container {
-  background: rgba(255,255,255,0.9);
-  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px);
   padding: 20px;
   width: 420px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 h2, h3 {
@@ -64,7 +79,7 @@ ul {
 }
 
 li {
-  background: #e3f2fd;
+  background: rgba(227,242,253,0.9);
   margin: 5px 0;
   padding: 8px;
   display: flex;
@@ -125,39 +140,53 @@ li {
 let currentDate = new Date();
 let isSolarMode = true;
 
-// ===== BACKGROUND THEO NGÀY =====
-const backgrounds = [
-  "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
-  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-  "https://images.unsplash.com/photo-1490750967868-88aa4486c946",
-  "https://images.unsplash.com/photo-1465101046530-73398c7f28ca",
-  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+// ===== BACKGROUND XỊN =====
+const bgMorning = [
+  "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee",
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e"
 ];
 
-function getDayOfYear(date) {
-  const start = new Date(date.getFullYear(), 0, 0);
-  return Math.floor((date - start) / (1000 * 60 * 60 * 24));
-}
+const bgDay = [
+  "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+  "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+];
+
+const bgEvening = [
+  "https://images.unsplash.com/photo-1495567720989-cebdbdd97913",
+  "https://images.unsplash.com/photo-1500534623283-312aade485b7"
+];
+
+const bgNight = [
+  "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429",
+  "https://images.unsplash.com/photo-1470770841072-f978cf4d019e"
+];
 
 function setBackground() {
-  const index = getDayOfYear(currentDate) % backgrounds.length;
-  document.body.style.backgroundImage = `url('${backgrounds[index]}')`;
+  const hour = new Date().getHours();
+  let list;
+
+  if (hour >= 5 && hour < 10) list = bgMorning;
+  else if (hour < 16) list = bgDay;
+  else if (hour < 19) list = bgEvening;
+  else list = bgNight;
+
+  const index = new Date().getDate() % list.length;
+  document.body.style.backgroundImage = `url('${list[index]}')`;
 }
 
 // ===== TOGGLE =====
 function toggleMode() {
   isSolarMode = !isSolarMode;
 
-  document.getElementById("solarMode").style.display = isSolarMode ? "block" : "none";
-  document.getElementById("lunarMode").style.display = isSolarMode ? "none" : "block";
+  solarMode.style.display = isSolarMode ? "block" : "none";
+  lunarMode.style.display = isSolarMode ? "none" : "block";
 
-  document.getElementById("modeBtn").innerText =
-    isSolarMode
-      ? "Tra cứu lịch dương sang âm"
-      : "Tra cứu lịch âm sang dương";
+  modeBtn.innerText = isSolarMode
+    ? "Tra cứu lịch dương sang âm"
+    : "Tra cứu lịch âm sang dương";
 }
 
-// ===== ÂM LỊCH =====
+// ===== ÂM LỊCH (giữ nguyên) =====
 function jdFromDate(dd, mm, yy) {
   let a = Math.floor((14 - mm) / 12);
   let y = yy + 4800 - a;
@@ -210,69 +239,17 @@ function convertSolar2Lunar(dd, mm, yy, timeZone = 7) {
   return { day: lunarDay, month: lunarMonth, year: lunarYear };
 }
 
-// ===== ÂM → DƯƠNG =====
-function convertLunarToSolar() {
-  const ld = +lDay.value;
-  const lm = +lMonth.value;
-  const ly = +lYear.value;
-
-  let start = new Date(ly - 1, 0, 1);
-  let end = new Date(ly + 1, 11, 31);
-
-  while (start <= end) {
-    let d = start.getDate();
-    let m = start.getMonth() + 1;
-    let y = start.getFullYear();
-
-    let lunar = convertSolar2Lunar(d, m, y);
-
-    if (lunar.day === ld && lunar.month === lm && lunar.year === ly) {
-      resultSolar.innerText = `→ ${d}/${m}/${y}`;
-      return;
-    }
-
-    start.setDate(start.getDate() + 1);
-  }
-
-  resultSolar.innerText = "Không tìm thấy";
-}
-
-// ===== DƯƠNG → ÂM =====
-function convertSelectedDate() {
-  const value = datePicker.value;
-  if (!value) return;
-
-  const d = new Date(value);
-
-  const lunar = convertSolar2Lunar(
-    d.getDate(),
-    d.getMonth() + 1,
-    d.getFullYear()
-  );
-
-  resultLunar.innerText =
-    `→ ${lunar.day}/${lunar.month}/${lunar.year}`;
-}
-
-// ===== HIỂN THỊ + GIỜ =====
+// ===== HIỂN THỊ =====
 function updateTime() {
   const now = new Date();
-
-  const time = now.toLocaleTimeString("vi-VN");
-
-  const date = currentDate.toLocaleDateString("vi-VN", {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  solar.innerText = `${time} - ${date}`;
+  solar.innerText = `${now.toLocaleTimeString("vi-VN")} - ${currentDate.toLocaleDateString("vi-VN", {
+    weekday:'long', year:'numeric', month:'long', day:'numeric'
+  })}`;
 }
 
 function renderDate() {
   updateTime();
-  setBackground(); // 🔥 cập nhật background theo ngày
+  setBackground();
 
   const lunar = convertSolar2Lunar(
     currentDate.getDate(),
@@ -288,13 +265,7 @@ function renderDate() {
 
 setInterval(updateTime, 1000);
 
-// ===== ĐỔI NGÀY =====
-function changeDate(days) {
-  currentDate.setDate(currentDate.getDate() + days);
-  renderDate();
-}
-
-// ===== TASK =====
+// ===== TASK ===== (giữ nguyên)
 function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
