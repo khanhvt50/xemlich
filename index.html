@@ -14,7 +14,6 @@ body {
   color: white;
 }
 
-/* ===== LAYOUT ===== */
 .wrapper {
   display: flex;
   width: 100%;
@@ -22,7 +21,7 @@ body {
   gap: 20px;
 }
 
-/* ===== LEFT ===== */
+/* LEFT */
 .left {
   width: 420px;
   background: rgba(255,255,255,0.1);
@@ -31,7 +30,7 @@ body {
   border-radius: 16px;
 }
 
-/* ===== RIGHT ===== */
+/* RIGHT */
 .right {
   flex: 1;
   display: flex;
@@ -39,7 +38,6 @@ body {
   gap: 20px;
 }
 
-/* CARD */
 .card {
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(15px);
@@ -47,8 +45,8 @@ body {
   border-radius: 16px;
 }
 
-/* ===== ELEMENT ===== */
 h2,h3 {text-align:center;margin:5px 0;}
+
 button {
   padding:6px 10px;
   border:none;
@@ -57,10 +55,11 @@ button {
   color:white;
   cursor:pointer;
 }
-button:hover {background:rgba(255,255,255,0.4);}
+
 input {padding:6px;margin:3px;border-radius:6px;border:none;}
 
 ul {list-style:none;padding:0;}
+
 li {
   background:rgba(255,255,255,0.2);
   margin:5px 0;
@@ -69,7 +68,7 @@ li {
   justify-content:space-between;
 }
 
-/* ===== CALENDAR ===== */
+/* CALENDAR */
 .calendar {
   display:grid;
   grid-template-columns: repeat(7,1fr);
@@ -86,6 +85,58 @@ li {
 .today {
   background:#ff4081;
 }
+
+/* ===== WEATHER IPHONE STYLE ===== */
+.weather-city {
+  text-align:center;
+  font-size:18px;
+  margin-bottom:5px;
+}
+
+.weather-main {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+}
+
+#weatherTemp {
+  font-size:42px;
+  font-weight:bold;
+}
+
+#weatherIcon {
+  font-size:36px;
+}
+
+#weatherDesc {
+  text-align:center;
+  margin-top:5px;
+}
+
+.weather-extra {
+  text-align:center;
+  margin-top:5px;
+}
+
+.forecast {
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+}
+
+.forecast div {
+  text-align:center;
+}
+
+/* toggle spacing */
+.toggle-btn {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  background: rgba(33,150,243,0.8);
+}
 </style>
 </head>
 
@@ -93,7 +144,6 @@ li {
 
 <div class="wrapper">
 
-<!-- ===== LEFT ===== -->
 <div class="left">
 
 <h2 id="solar"></h2>
@@ -111,42 +161,58 @@ li {
 
 <ul id="taskList"></ul>
 
-<button onclick="toggleMode()" id="modeBtn">Tra cứu dương → âm</button>
+<!-- 🌤️ WEATHER FULL IPHONE -->
+<div class="card">
+
+<div class="weather-city" id="weatherCity"></div>
+
+<div class="weather-main">
+  <div id="weatherTemp">--°</div>
+  <div id="weatherIcon">☀️</div>
+</div>
+
+<div id="weatherDesc">---</div>
+
+<div class="weather-extra">
+  <span id="weatherWind">💨 --</span>
+</div>
+
+<div class="forecast" id="forecast"></div>
+
+</div>
+
+<button class="toggle-btn" onclick="toggleMode()" id="modeBtn">
+Tra cứu dương → âm
+</button>
 
 <div id="solarMode">
-<input type="date" id="datePicker" onchange="convertSelectedDate()">
+<input type="date" id="datePicker">
 <h3 id="resultLunar"></h3>
 </div>
 
 <div id="lunarMode" style="display:none;">
-<input id="lDay" placeholder="Ngày">
-<input id="lMonth" placeholder="Tháng">
-<input id="lYear" placeholder="Năm">
-<button onclick="convertLunarToSolar()">Chuyển</button>
-<h3 id="resultSolar"></h3>
+<input id="lDay">
+<input id="lMonth">
+<input id="lYear">
 </div>
 
 </div>
 
-<!-- ===== RIGHT ===== -->
 <div class="right">
 
-<!-- CALENDAR -->
 <div class="card">
 <h3>📅 Lịch tháng</h3>
 <div id="calendar" class="calendar"></div>
 </div>
 
-<!-- STATS -->
 <div class="card">
 <h3>📊 Thống kê</h3>
 <p id="taskCount"></p>
 </div>
 
-<!-- NOTE -->
 <div class="card">
 <h3>📝 Ghi chú</h3>
-<textarea id="note" style="width:100%;height:80px;"></textarea>
+<textarea style="width:100%;height:80px;"></textarea>
 </div>
 
 </div>
@@ -157,18 +223,18 @@ li {
 let currentDate = new Date();
 let isSolarMode = true;
 
-/* ===== TIME ===== */
+/* TIME */
 function updateTime(){
   solar.innerText = new Date().toLocaleTimeString("vi-VN") + " - " +
   currentDate.toLocaleDateString("vi-VN",{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 }
 
-/* ===== FAKE LUNAR (giữ logic cũ của bạn có thể thay lại) ===== */
+/* LUNAR */
 function convertSolar2Lunar(d,m,y){
   return {day:d,month:m,year:y};
 }
 
-/* ===== RENDER ===== */
+/* RENDER */
 function render(){
   updateTime();
 
@@ -184,35 +250,25 @@ function render(){
   renderCalendar();
 }
 
-/* ===== CALENDAR ===== */
+/* CALENDAR */
 function renderCalendar(){
   const cal = document.getElementById("calendar");
   cal.innerHTML = "";
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-
   const lastDay = new Date(year, month+1, 0).getDate();
 
   for(let i=1;i<=lastDay;i++){
     const div = document.createElement("div");
     div.className = "day";
-
     if(i === currentDate.getDate()) div.classList.add("today");
-
     div.innerText = i;
     cal.appendChild(div);
   }
 }
 
-/* ===== TOGGLE ===== */
-function toggleMode(){
-  isSolarMode = !isSolarMode;
-  solarMode.style.display = isSolarMode?"block":"none";
-  lunarMode.style.display = isSolarMode?"none":"block";
-}
-
-/* ===== TASK ===== */
+/* TASK */
 function formatDate(d){return d.toISOString().split('T')[0];}
 function getTasks(){return JSON.parse(localStorage.getItem(formatDate(currentDate)))||[];}
 function saveTasks(t){localStorage.setItem(formatDate(currentDate),JSON.stringify(t));}
@@ -223,7 +279,6 @@ function renderTasks(){
   list.forEach((t,i)=>{
     taskList.innerHTML+=`<li>${t}<span onclick="deleteTask(${i})">❌</span></li>`;
   });
-
   taskCount.innerText = "Tổng công việc: " + list.length;
 }
 
@@ -243,13 +298,75 @@ function deleteTask(i){
   renderTasks();
 }
 
-/* ===== CHANGE DATE ===== */
+/* TOGGLE */
+function toggleMode(){
+  isSolarMode = !isSolarMode;
+  solarMode.style.display = isSolarMode?"block":"none";
+  lunarMode.style.display = isSolarMode?"none":"block";
+}
+
+/* CHANGE DATE */
 function changeDate(d){
   currentDate.setDate(currentDate.getDate()+d);
   render();
 }
 
-/* ===== INIT ===== */
+/* ===== WEATHER IPHONE ===== */
+function getIcon(code){
+  if(code===0) return "☀️";
+  if(code<=3) return "⛅";
+  if(code<=48) return "☁️";
+  if(code<=67) return "🌧️";
+  return "⛈️";
+}
+
+function getDesc(code){
+  if(code===0) return "Trời quang";
+  if(code<=3) return "Ít mây";
+  if(code<=48) return "Nhiều mây";
+  if(code<=67) return "Mưa";
+  return "Giông";
+}
+
+function loadWeather(lat, lon){
+
+fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min&timezone=auto`)
+.then(res=>res.json())
+.then(data=>{
+  const w=data.current_weather;
+
+  weatherTemp.innerText=w.temperature+"°";
+  weatherIcon.innerText=getIcon(w.weathercode);
+  weatherDesc.innerText=getDesc(w.weathercode);
+  weatherWind.innerText="💨 "+w.windspeed+" km/h";
+
+  let html="";
+  for(let i=0;i<7;i++){
+    html+=`<div>
+      <div>${new Date(data.daily.time[i]).toLocaleDateString("vi-VN",{weekday:'short'})}</div>
+      <div>${Math.round(data.daily.temperature_2m_max[i])}°</div>
+      <div>${Math.round(data.daily.temperature_2m_min[i])}°</div>
+    </div>`;
+  }
+  forecast.innerHTML=html;
+});
+
+fetch(`https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}`)
+.then(res=>res.json())
+.then(data=>{
+  weatherCity.innerText =
+    data.address.city ||
+    data.address.town ||
+    data.address.country;
+});
+
+}
+
+navigator.geolocation.getCurrentPosition(pos=>{
+  loadWeather(pos.coords.latitude,pos.coords.longitude);
+});
+
+/* INIT */
 setInterval(updateTime,1000);
 render();
 </script>
